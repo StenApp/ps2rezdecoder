@@ -58,7 +58,8 @@ ps2rezdecoder -m hash -f "some/path/file.ltb"
 ## Language Blocks
 
 The `LITH_PS2.REZ` file is split into **5 blocks**.  
-Each block contains the files for one language (mainly the `.LIT` voice packages).
+Each block contains the files for one language (mainly the `.LIT` voice packages).  
+Operative, The - No One Lives Forever (Europe) (En,Fr,De,Es,It).iso
 
 | Block | Language     |
 |-------|--------------|
