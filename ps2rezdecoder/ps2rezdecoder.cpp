@@ -1,184 +1,141 @@
 // ps2rezdecoder.cpp
-// Improved version – C++14 / Visual Studio 2019 compatible
-//
-// Changes vs original:
-//  - Only the requested language block is loaded (saves a lot of RAM)
-//  - Hash → FileData map for O(1) lookup
-//  - Single large buffer for extraction (no per-chunk new/delete)
-//  - Progress counter
-//  - Cleaner path handling
-//
+// Updated for correct table layout + language groups + unknown dump
 
 #include <iostream>
 #include <vector>
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <iomanip>
 #include <cctype>
-
 #include "Rez.h"
 #include "cxxopts.hpp"
 
-// ------------------------------------------------------------------
-// Hash function (unchanged – extracted from LTIOREZ.IRX)
-// ------------------------------------------------------------------
-unsigned int rezCalcHash(const char* szFileName, int magic)
-{
-    unsigned int result = 0;
-    int i = 0;
+unsigned int rezCalcHash(const char* szFileName, int magic);
+void extractRez(Rez* aRez, const std::string& fileList, bool dumpUnknowns);
+void checkHash(Rez* aRez, const std::string& fileName);
 
-    while (szFileName[i] != '\0') {
-        unsigned int c = static_cast<unsigned char>(std::toupper(static_cast<unsigned char>(szFileName[i])));
-        if (c == '/') c = '\\';          // normalize separators
-        result = result + c + result * static_cast<unsigned int>(magic);
-        ++i;
-    }
-    return result;
-}
-
-// ------------------------------------------------------------------
-// Extract everything from a file list
-// ------------------------------------------------------------------
-void extractRez(Rez& rez, const std::string& fileListPath, int block)
-{
-    std::ifstream infile(fileListPath);
-    if (!infile.is_open()) {
-        std::cerr << "ERROR: Could not open file list \"" << fileListPath << "\"\n";
-        return;
-    }
-
-    // First pass: count lines for progress
-    size_t totalLines = 0;
-    {
-        std::string dummy;
-        while (std::getline(infile, dummy)) {
-            if (!dummy.empty()) ++totalLines;
-        }
-        infile.clear();
-        infile.seekg(0);
-    }
-
-    std::cout << "Extracting from block " << block
-              << "  (" << rez.GetFileCount() << " files in REZ, "
-              << totalLines << " entries in list)\n\n";
-
-    size_t processed = 0;
-    size_t extracted = 0;
-    size_t missing   = 0;
-
-    std::string line;
-    while (std::getline(infile, line)) {
-        // Trim leading/trailing whitespace
-        size_t start = line.find_first_not_of(" \t\r\n");
-        if (start == std::string::npos) continue;
-        size_t end = line.find_last_not_of(" \t\r\n");
-        line = line.substr(start, end - start + 1);
-        if (line.empty()) continue;
-
-        ++processed;
-
-        unsigned int hash = rezCalcHash(line.c_str(), static_cast<int>(rez.GetMagicNumber()));
-        bool ok = rez.Extract(line, hash, block);
-
-        if (ok) {
-            ++extracted;
-        } else {
-            ++missing;
-        }
-
-        // Progress every 50 files or at the end
-        if (processed % 50 == 0 || processed == totalLines) {
-            double pct = totalLines ? (100.0 * processed / totalLines) : 100.0;
-            std::cout << "\r[" << std::setw(3) << static_cast<int>(pct) << "%] "
-                      << processed << " / " << totalLines
-                      << "   extracted: " << extracted
-                      << "   missing: " << missing
-                      << "          " << std::flush;
-        }
-    }
-
-    std::cout << "\n\nDone.\n"
-              << "  Processed : " << processed << "\n"
-              << "  Extracted : " << extracted << "\n"
-              << "  Missing   : " << missing << "\n";
-}
-
-// ------------------------------------------------------------------
-// Just print a hash
-// ------------------------------------------------------------------
-void checkHash(Rez& rez, const std::string& fileName)
-{
-    unsigned int hash = rezCalcHash(fileName.c_str(), static_cast<int>(rez.GetMagicNumber()));
-    std::cout << fileName << "  →  hash = " << hash << "\n";
-}
-
-// ------------------------------------------------------------------
-// main
-// ------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
     std::string fileList = "file list.txt";
     std::string rezFile  = "LITH_PS2.REZ";
     std::string mode     = "extract";
+    int  language        = 0;
     bool showHelp        = false;
-    int block            = 0;
+    bool dumpUnknowns    = false;
 
     cxxopts::Options options("PS2 Rez Decoder and Extractor",
-                             "Decodes and extracts PS2 Lithtech REZ files (C++14 / VS2019)");
+        "Decodes and extracts a PS2 Lithtech REZ file (language-aware).");
 
     options.add_options()
-        ("h,help",  "Show help",                         cxxopts::value(showHelp))
-        ("f,file",  "File list",                         cxxopts::value(fileList))
-        ("r,rez",   "REZ file",                          cxxopts::value(rezFile))
-        ("b,block", "Language block (0=EN 1=FR 2=DE 3=ES 4=IT)", cxxopts::value(block))
-        ("m,mode",  "Mode: extract | hash",              cxxopts::value(mode));
+        ("h,help",     "Show help")
+        ("f,file",     "File list (or single filename for hash mode)", cxxopts::value(fileList))
+        ("r,rez",      "Path to LITH_PS2.REZ",                        cxxopts::value(rezFile))
+        ("l,language", "Language group 0-4",                           cxxopts::value(language))
+        ("m,mode",     "Mode: extract | hash",                         cxxopts::value(mode))
+        ("u,unknowns", "Also extract unknown hashes as .bin blobs",    cxxopts::value(dumpUnknowns))
+        ;
 
     auto result = options.parse(argc, argv);
 
-    if (showHelp) {
-        std::cout << options.help() << "\n";
-        std::cout << "Default settings:\n"
-                  << "  File List     : " << fileList << "\n"
-                  << "  REZ File      : " << rezFile  << "\n"
-                  << "  Block Number  : " << block    << "\n"
-                  << "  Mode          : " << mode     << "\n\n";
-
-        std::cout << "Language blocks:\n"
-                  << "  0 = English\n"
-                  << "  1 = French\n"
-                  << "  2 = German\n"
-                  << "  3 = Spanish\n"
-                  << "  4 = Italian\n";
+    if (result.count("help") || showHelp) {
+        std::cout << options.help() << "\n"
+                  << "Language groups (0-4):\n"
+                  << "  Each group consists of every 5th table\n"
+                  << "  (0,5,10,... / 1,6,11,... etc.)\n"
+                  << "  Exact language mapping still being verified via credits/voices.\n\n";
         return 0;
     }
 
     if (mode != "extract" && mode != "hash") {
-        std::cerr << "Error: Mode must be 'extract' or 'hash'\n";
+        std::cerr << "Error: mode must be 'extract' or 'hash'\n";
         return 1;
     }
 
     std::cout << "Settings:\n"
-              << "  File List     : " << fileList << "\n"
-              << "  REZ File      : " << rezFile  << "\n"
-              << "  Block Number  : " << block    << "\n"
-              << "  Mode          : " << mode     << "\n\n";
+              << "  File List   : " << fileList << "\n"
+              << "  Rez File    : " << rezFile  << "\n"
+              << "  Language    : " << language << "\n"
+              << "  Mode        : " << mode     << "\n"
+              << "  Dump unknowns: " << (dumpUnknowns ? "yes" : "no") << "\n\n";
 
-    Rez rez;
+    Rez* aRez = new Rez();
 
-    // Open only the requested block → big RAM saving
-    if (!rez.Open(rezFile, block)) {
-        std::cerr << "ERROR: Failed to open \"" << rezFile << "\" (block " << block << ")\n";
+    if (!aRez->Open(rezFile, language)) {
+        std::cerr << "ERROR: Failed to open " << rezFile << "\n";
+        delete aRez;
         return 1;
     }
 
     if (mode == "extract") {
-        extractRez(rez, fileList, block);
+        extractRez(aRez, fileList, dumpUnknowns);
     }
-    else {
-        checkHash(rez, fileList);   // in hash mode the "file list" parameter is a single filename
+    else if (mode == "hash") {
+        checkHash(aRez, fileList);
     }
 
-    rez.Close();
+    aRez->Close();
+    delete aRez;
     return 0;
+}
+
+void extractRez(Rez* aRez, const std::string& fileList, bool dumpUnknowns)
+{
+    const uint magic = aRez->GetMagicNumber();
+    size_t ok = 0, missing = 0;
+
+    std::ifstream infile(fileList);
+    if (!infile) {
+        std::cerr << "ERROR: cannot open file list: " << fileList << "\n";
+        return;
+    }
+
+    std::string line;
+    while (std::getline(infile, line)) {
+        // trim
+        while (!line.empty() && (line.back() == '\r' || line.back() == ' ' || line.back() == '\t'))
+            line.pop_back();
+        if (line.empty() || line[0] == '#')
+            continue;
+
+        // take first token only
+        std::istringstream iss(line);
+        std::string file;
+        if (!(iss >> file))
+            continue;
+
+        uint hash = rezCalcHash(file.c_str(), magic);
+        if (aRez->Extract(file, hash)) {
+            ++ok;
+        } else {
+            ++missing;
+            // optional: std::cout << "missing: " << file << "\n";
+        }
+    }
+    infile.close();
+
+    std::cout << "Extracted " << ok << " known files, "
+              << missing << " from list not found in this language group.\n";
+
+    if (dumpUnknowns) {
+        aRez->ExtractUnknowns("out/unknown");
+    }
+}
+
+void checkHash(Rez* aRez, const std::string& fileName)
+{
+    uint hash = rezCalcHash(fileName.c_str(), aRez->GetMagicNumber());
+    std::cout << fileName << " -> 0x" << std::hex << std::uppercase << hash
+              << " (" << std::dec << hash << ")\n";
+}
+
+// Extracted from LTIOREZ.IRX
+unsigned int rezCalcHash(const char* szFileName, int magic)
+{
+    unsigned int result = 0;
+    for (int i = 0; szFileName[i] != '\0'; ++i) {
+        unsigned int c = static_cast<unsigned char>(toupper(static_cast<unsigned char>(szFileName[i])));
+        if (c == '/') c = '\\';
+        result = result + c + result * static_cast<unsigned int>(magic);
+    }
+    return result;
 }

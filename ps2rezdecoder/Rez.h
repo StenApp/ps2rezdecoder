@@ -4,11 +4,11 @@
 #include <vector>
 #include <fstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <cstdint>
 
 typedef uint32_t uint;
 
-// Pascally-cased, because of habit. Sorry.
 struct Header {
     uint unknown;
     uint iTotalFiles;
@@ -19,43 +19,47 @@ struct Header {
 
 struct FileData {
     uint iNameHash;
-    uint iOffset;
+    uint iOffset;   // in 2048-byte units
     uint iSize;
     uint iXSize;
 };
 
-struct BlockData {
-    char padding[736];
-    std::vector<FileData> Files;
-    // Fast lookup: hash -> FileData
-    std::unordered_map<uint, FileData> HashMap;
-};
-
-//
-// Thanks to https://zenhax.com/viewtopic.php?t=11139 and aluigi for his original extraction script!
-//
 class Rez
 {
 public:
+    static const uint TABLE_START    = 0x800;
+    static const uint TABLE_STRIDE   = 0x19000;
+    static const uint ENTRY_SIZE     = 16;
+    static const int  LANGUAGE_COUNT = 5;
+
     Rez();
     ~Rez();
 
-    // desiredBlock: which language block to load (0-4). Default 0 = English
-    bool Open(const std::string& file, int desiredBlock = 0);
+    // language: 0..4
+    bool Open(const std::string& file, int language = 0);
     bool Close();
 
-    bool Extract(const std::string& filename, uint hash, int blockNumber = 0);
+    // Extract a single file by hash. Returns true if found and written.
+    bool Extract(const std::string& filename, uint hash);
+
+    // Extract every hash that is present in the loaded language group
+    // but was NOT requested via Extract(). Writes them as unknown_XXXXXXXX.bin
+    void ExtractUnknowns(const std::string& outDir = "out/unknown");
 
     uint GetMagicNumber() const { return m_Header.iMagicNumber; }
-    int  GetLoadedBlock() const { return m_LoadedBlock; }
-    size_t GetFileCount() const;
+    int  GetLoadedLanguage() const { return m_LoadedLanguage; }
+    size_t GetFileCount() const { return m_HashMap.size(); }
+
+    // Mark a hash as "already extracted" (used by the main loop)
+    void MarkExtracted(uint hash) { m_Extracted.insert(hash); }
 
 protected:
     Header m_Header;
-    BlockData m_Block;          // Only one block is kept in memory
-    int m_LoadedBlock;          // Which block is currently loaded
+    std::unordered_map<uint, FileData> m_HashMap;
+    std::unordered_set<uint> m_Extracted;
+    int m_LoadedLanguage = -1;
     std::ifstream m_Stream;
-
-    // Reusable buffer for extraction (avoids many small allocations)
     std::vector<char> m_ExtractBuffer;
+
+    bool WriteFileData(const FileData& fd, const std::string& outputPath);
 };
