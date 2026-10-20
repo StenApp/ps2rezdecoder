@@ -90,9 +90,7 @@ There are three different file lists included:
 
 | File                        | Approx. entries | Description                                      | Recommendation                     |
 |-----------------------------|-----------------|--------------------------------------------------|------------------------------------|
-| `file list.txt`             | medium          | Default list                                     | Everyday use                       |
-| `file list - clean.txt`     | ~4 700          | Cleaned / slightly reduced list                  | When you want fewer files          |
-| `file list - full.txt`      | ~38 900         | Almost complete list of known files              | Maximum known-name extraction      |
+| `file list.txt`             | medium          | Default list                                     | All known                       |
 
 **Tipp:** Für andere Sprachen am besten `-m all` verwenden – dann brauchst du keine Dateiliste.
 

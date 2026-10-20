@@ -379,6 +379,20 @@ void Rez::ExtractUnknowns(
         return;
     }
 
+    // Write a manifest for successfully extracted unknown files.
+    // The list is stored alongside the unknown_XXXXXXXX.bin files.
+    const std::string hashListPath =
+        NormalizePath(outDir + "\\unknown_hashlist.txt");
+    std::ofstream hashList(hashListPath, std::ios::out | std::ios::trunc);
+
+    if (!hashList) {
+        std::cerr << "WARNING: cannot create unknown hash list: "
+                  << hashListPath << '\n';
+    }
+    else {
+        hashList << "# filename\thash\tsize\toffset\txsize\n";
+    }
+
     for (const auto& pair : m_HashMap) {
         const uint hash = pair.first;
 
@@ -414,6 +428,19 @@ void Rez::ExtractUnknowns(
 
         if (WriteFileData(*selected, outputPath)) {
             ++stats.written;
+
+            if (hashList) {
+                hashList << name.str()
+                         << "\t0x"
+                         << std::uppercase << std::hex
+                         << std::setw(8) << std::setfill('0')
+                         << hash
+                         << std::dec << std::setfill(' ')
+                         << "\t" << selected->iSize
+                         << "\t" << selected->iOffset
+                         << "\t" << selected->iXSize
+                         << '\n';
+            }
         }
         else {
             ++stats.failed;
@@ -426,6 +453,14 @@ void Rez::ExtractUnknowns(
                 << ", size=" << selected->iSize
                 << ", xsize=" << selected->iXSize
                 << '\n';
+        }
+    }
+
+    if (hashList) {
+        hashList.flush();
+        if (!hashList) {
+            std::cerr << "WARNING: failed while writing unknown hash list: "
+                      << hashListPath << '\n';
         }
     }
 }
