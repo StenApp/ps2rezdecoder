@@ -343,7 +343,6 @@ chars/skins/dockguard_style2_head.dtx
 chars/skins/dockguard_style2.dtx
 chars/skins/doctor_action_head.dtx
 chars/skins/doctor_action.dtx
-chars/skins/dog_action_head.dtx
 chars/skins/dog_action.dtx
 chars/skins/eliteasian_action_head.dtx
 chars/skins/eliteasian_action.dtx
@@ -468,9 +467,7 @@ chars/skins/russian_action_head.dtx
 chars/skins/russian_action.dtx
 chars/skins/scotsman_action_head.dtx
 chars/skins/scotsman_action.dtx
-chars/skins/shark_action_head.dtx
 chars/skins/shark_action.dtx
-chars/skins/shark_casual_head.dtx
 chars/skins/shark_casual.dtx
 chars/skins/stasiguard_action_head.dtx
 chars/skins/stasiguard_action_head1.dtx
@@ -500,9 +497,6 @@ chars/skins/workguard_action_head2.dtx
 chars/skins/workguard_action.dtx
 config\autoexec.ps2
 credits\credits.txt
-credits\demoinfo.txt
-credits\demointro.txt
-credits\demomulti.txt
 credits\intro.txt
 guns/models_hh/ak47_hh.ltb
 guns/models_hh/atomlaser_hh.ltb
@@ -818,7 +812,6 @@ interface/skins/reeltoreel.dtx
 interface/skins/roster.dtx
 interface/skins/securitypass.dtx
 interface/skins/ticket.dtx
-Interface\DlgWnd\dialogueframe
 interface\mb_back.dtx
 interface\missingslot.pcx
 interface\missionfailure.dtx
@@ -1845,7 +1838,6 @@ statbar/art/activate.dtx
 statbar/art/activategadget.dtx
 statbar/art/boss_empty.dtx
 statbar/art/boss_full.dtx
-statbar/art/guns/holster.dtx
 statbar/art/icon_air.dtx
 statbar/art/icon_armor.dtx
 statbar/art/icon_bleed.dtx
