@@ -98,4 +98,4 @@ With `-u` you can additionally dump every remaining unknown hash as `unknown_XXX
 - aluigi and this thread https://zenhax.com/viewtopic.php?t=11139 for the original script.
 - LithFAQ community.
 - Monolith/Sierra for leaving debug symbols in LTIOREZ.IRX.
-- My partner for not being mad I woke her up at 2:30am that one night going to bed.
+- haekb for his original version
