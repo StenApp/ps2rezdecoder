@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <unordered_map>
 #include <unordered_set>
-#include <cstdint>
 
 typedef uint32_t uint;
 
@@ -19,18 +20,37 @@ struct Header {
 
 struct FileData {
     uint iNameHash;
-    uint iOffset;   // in 2048-byte units
+    uint iOffset;   // Offset in 2048-byte units
     uint iSize;
     uint iXSize;
+};
+
+struct RezEntry {
+    FileData data;
+    uint32_t tableIndex;
+};
+
+enum class ExtractResult {
+    Written,
+    HashNotFound,
+    LanguageEntryNotFound,
+    ZeroSize,
+    WriteFailed
+};
+
+struct UnknownStats {
+    size_t written = 0;
+    size_t zeroSize = 0;
+    size_t failed = 0;
 };
 
 class Rez
 {
 public:
-    static const uint TABLE_START    = 0x800;
-    static const uint TABLE_STRIDE   = 0x19000;
-    static const uint ENTRY_SIZE     = 16;
-    static const int  LANGUAGE_COUNT = 5;
+    static const uint TABLE_START = 0x800;
+    static const uint TABLE_STRIDE = 0x19000;
+    static const uint ENTRY_SIZE = 16;
+    static const int LANGUAGE_COUNT = 5;
 
     Rez();
     ~Rez();
@@ -39,27 +59,55 @@ public:
     bool Open(const std::string& file, int language = 0);
     bool Close();
 
-    // Extract a single file by hash. Returns true if found and written.
-    bool Extract(const std::string& filename, uint hash);
+    // Extract a known file and report its result.
+    ExtractResult Extract(const std::string& filename, uint hash);
 
-    // Extract every hash that is present in the loaded language group
-    // but was NOT requested via Extract(). Writes them as unknown_XXXXXXXX.bin
-    void ExtractUnknowns(const std::string& outDir = "out/unknown");
+    // Extract unknown hashes and return their statistics.
+    void ExtractUnknowns(
+        const std::string& outDir,
+        UnknownStats& stats);
 
-    uint GetMagicNumber() const { return m_Header.iMagicNumber; }
-    int  GetLoadedLanguage() const { return m_LoadedLanguage; }
-    size_t GetFileCount() const { return m_HashMap.size(); }
+    // Convenience overload for callers that do not need statistics.
+    void ExtractUnknowns(
+        const std::string& outDir = "out/unknown");
 
-    // Mark a hash as "already extracted" (used by the main loop)
-    void MarkExtracted(uint hash) { m_Extracted.insert(hash); }
+    uint GetMagicNumber() const {
+        return m_Header.iMagicNumber;
+    }
+
+    int GetLoadedLanguage() const {
+        return m_LoadedLanguage;
+    }
+
+    size_t GetFileCount() const {
+        return m_HashMap.size();
+    }
+
+    // Retained for compatibility with existing callers.
+    void MarkExtracted(uint hash) {
+        m_Extracted.insert(hash);
+    }
+
+    void DebugHash(uint hash) const;
 
 protected:
-    Header m_Header;
-    std::unordered_map<uint, FileData> m_HashMap;
+    Header m_Header{};
+
+    std::unordered_map<uint, std::vector<RezEntry>> m_HashMap;
+
+    // Hashes whose known file-list entry matched the selected language.
+    // These are excluded from the unknown dump even if writing failed.
+    std::unordered_set<uint> m_Requested;
+
+    // Hashes successfully written as known files.
     std::unordered_set<uint> m_Extracted;
+
     int m_LoadedLanguage = -1;
+
     std::ifstream m_Stream;
     std::vector<char> m_ExtractBuffer;
 
-    bool WriteFileData(const FileData& fd, const std::string& outputPath);
+    bool WriteFileData(
+        const FileData& fd,
+        const std::string& outputPath);
 };
