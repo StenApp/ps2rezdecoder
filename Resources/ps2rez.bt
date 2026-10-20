@@ -11,7 +11,8 @@
 //   History: 
 //------------------------------------------------
 
-typedef struct {
+typedef struct
+{
     uint firstDummy;
     uint totalFiles;
     uint secondDummy;
@@ -19,20 +20,27 @@ typedef struct {
     uint totalBlocks;
 } RezHeader;
 
-typedef struct {
+typedef struct
+{
     uint nameCRC;
     uint offset;
     uint size;
     uint xSize;
 } FileData;
 
-typedef struct (int length) {
-    char padding[736];
-    FileData fileData[length];// <optimize=false>;
-} BlockData;
-
 RezHeader hdr;
 
-FSeek(1312);
+local int i;
+local int tableStart;
 
-BlockData blockData(hdr.totalFiles)[hdr.totalBlocks];// <optimize=false>;
+for (i = 0; i < hdr.totalBlocks; i++)
+{
+    tableStart = 0x800 + i * 0x19000;
+
+    FSeek(tableStart);
+
+    struct
+    {
+        FileData entries[hdr.totalFiles];
+    } table;
+}
