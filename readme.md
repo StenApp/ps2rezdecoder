@@ -1,22 +1,23 @@
 # PS2 Rez Decoder and Extractor
 
-Extracts PS2 lithtech rez files (e.g. `LITH_PS2.REZ` from *No One Lives Forever*).
+Extracts PS2 LithTech REZ files (e.g. `LITH_PS2.REZ` from *No One Lives Forever*).
 
-The rez only contains hashes, so if you're missing a specific file, you can add it into the file list.  
-The application will hash that filename/path and check it against the hashes in the rez file.  
-If it matches, it'll extract it for you!
+The REZ only contains hashes.  
+Add any missing filename/path to the file list – the tool hashes it and extracts the matching entry if present.
 
 **Requires Visual Studio 2019 or any C++14 compatible compiler.**
 
 ---
 
-## Improvements in this version
+## Improvements (V1.1)
 
-- Only the requested language block is loaded → **much lower RAM usage**
 - Hash map for O(1) file lookup
-- Single reusable buffer for extraction (no memory leaks / many small allocations)
-- Progress display while extracting
+- Single reusable extraction buffer (no memory leaks / many small allocations)
 - Cleaner path handling
+- Language group selection (`-l 0..4`) with correct interleaved table logic
+- Detailed extraction summary
+- Optional dump of unknown hashes as `.bin` files (`-u`) + manifest
+- Diagnostic file `not_found.txt`
 - Still 100 % C++14 / VS 2019 compatible
 
 ---
@@ -29,25 +30,26 @@ ps2rezdecoder [options]
 
 ### Parameters
 
-| Parameter       | Short | Default              | Description                                      |
-|-----------------|-------|----------------------|--------------------------------------------------|
-| `--help`        | `-h`  | –                    | Shows help                                       |
-| `--file`        | `-f`  | `file list.txt`      | Path to the file list                            |
-| `--rez`         | `-r`  | `LITH_PS2.REZ`       | Path to the REZ file                             |
-| `--block`       | `-b`  | `0`                  | Language block to extract (see table below)      |
-| `--mode`        | `-m`  | `extract`            | Mode: `extract` or `hash`                        |
+| Parameter     | Short | Default          | Description                                      |
+|---------------|-------|------------------|--------------------------------------------------|
+| `--help`      | `-h`  | –                | Shows help                                       |
+| `--file`      | `-f`  | `file list.txt`  | Path to the file list (or single file in hash mode) |
+| `--rez`       | `-r`  | `LITH_PS2.REZ`   | Path to the REZ file                             |
+| `--language`  | `-l`  | `0`              | Language group 0–4 (see table below)             |
+| `--mode`      | `-m`  | `extract`        | Mode: `extract` or `hash`                        |
+| `--unknowns`  | `-u`  | off              | Also extract unknown hashes as `.bin` files      |
 
 ### Examples
 
 ```bash
-# Extract English (default)
+# Extract English (default language group 0)
 ps2rezdecoder
 
-# Extract German using the full file list
-ps2rezdecoder -b 2 -f "file list - full.txt"
+# Extract German language group
+ps2rezdecoder -l 2
 
-# Extract French
-ps2rezdecoder -r LITH_PS2.REZ -b 1 -f "file list - full.txt"
+# Extract French + dump all unknown files
+ps2rezdecoder -l 1 -u
 
 # Just calculate a hash
 ps2rezdecoder -m hash -f "some/path/file.ltb"
@@ -55,35 +57,39 @@ ps2rezdecoder -m hash -f "some/path/file.ltb"
 
 ---
 
-## Language Blocks
+## Language Groups
 
-The `LITH_PS2.REZ` file is split into **5 blocks**.  
-Each block contains the files for one language (mainly the `.LIT` voice packages).  
-Operative, The - No One Lives Forever (Europe) (En,Fr,De,Es,It).iso
+The REZ contains multiple tables that are interleaved by language group:
 
-| Block | Language     |
-|-------|--------------|
-| **0** | English      |
-| **1** | French       |
-| **2** | German       |
-| **3** | Spanish      |
-| **4** | Italian      |
+| Group | Tables          | Typical content |
+|-------|-----------------|-----------------|
+| **0** | 1, 6, 11, …     | English         |
+| **1** | 2, 7, 12, …     | French          |
+| **2** | 3, 8, 13, …     | German          |
+| **3** | 4, 9, 14, …     | Spanish         |
+| **4** | 5, 10, 15, …    | Italian         |
 
-> **Note:** This mapping comes from community analysis (ZenHAX).
+> Mapping based on community analysis (ZenHAX) and further testing.
 
 ---
 
-## File Lists
+## File List
 
-There are three different file lists included:
+Only one cleaned file list is included:
 
-| File                        | Approx. entries | Description                                      | Recommendation                     |
-|-----------------------------|-----------------|--------------------------------------------------|------------------------------------|
-| `file list.txt`             | medium          | Default list                                     | Everyday use                       |
-| `file list - clean.txt`     | ~4 700          | Cleaned / slightly reduced list                  | When you want fewer files          |
-| `file list - full.txt`      | ~38 900         | Almost complete list of known files              | **Best choice** for maximum extraction |
+| File            | Description                          | Recommendation     |
+|-----------------|--------------------------------------|--------------------|
+| `file list.txt` | Cleaned list of known filenames      | Default / all known |
 
-Use the **full** list when you want as many files as possible (especially useful for non-English language blocks).
+With `-u` you can additionally dump every remaining unknown hash as `unknown_XXXXXXXX.bin` (plus a `unknown_hashlist.txt` manifest in `out/unknown/`).
+
+---
+
+## Output
+
+- Known files are written with their original paths under `out/`.
+- Unknown files (when `-u` is used) go into `out/unknown/`.
+- A diagnostic file `not_found.txt` lists every entry from the file list that could not be found (`HASH_NOT_PRESENT` or `NO_LANGUAGE_ENTRY`).
 
 ---
 
@@ -92,4 +98,4 @@ Use the **full** list when you want as many files as possible (especially useful
 - aluigi and this thread https://zenhax.com/viewtopic.php?t=11139 for the original script.
 - LithFAQ community.
 - Monolith/Sierra for leaving debug symbols in LTIOREZ.IRX.
-- My partner for not being mad I woke her up at 2:30am that one night going to bed.
+- haekb for his original version
