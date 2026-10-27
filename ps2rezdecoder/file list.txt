@@ -315,6 +315,8 @@ Attributes/ModelButes.but
 Attributes/ModelButes.txt
 ATTRIBUTES/MUSIC.but
 Attributes/Music.txt
+Attributes/pal_Layout.but
+Attributes/pal_Layout.txt
 Attributes/PropTypes.but
 Attributes/PropTypes.txt
 Attributes/ServerButes.but
