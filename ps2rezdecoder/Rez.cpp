@@ -107,7 +107,7 @@ bool Rez::Open(const std::string& file, int language)
 
     std::cout
         << "REZ Header:\n"
-        << "  Unknown      : " << m_Header.unknown << '\n'
+        << "  Version      : " << m_Header.iVersion << '\n'
         << "  Total Files  : " << m_Header.iTotalFiles << '\n'
         << "  Magic Number : 0x" << std::hex
         << std::uppercase << m_Header.iMagicNumber

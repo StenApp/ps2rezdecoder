@@ -11,7 +11,7 @@
 typedef uint32_t uint;
 
 struct Header {
-    uint unknown;
+    uint iVersion;
     uint iTotalFiles;
     uint iMagicNumber;
     uint iDataOffset;
