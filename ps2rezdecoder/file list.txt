@@ -176,7 +176,6 @@ assetlists/m15s02_b.but
 assetlists/m15s02_b.txt
 assetlists/mainmenu.but
 assetlists/mainmenu.txt
-assetlists/mainmenu.txt
 assetlists/t01s01.but
 assetlists/t01s01.txt
 assetlists/t01s02.but
@@ -295,7 +294,6 @@ attributes/animationshuman.txt
 attributes/attachments.but
 attributes/attachments.txt
 attributes/butemaker.exe
-attributes/butemaker.exe
 attributes/clientbutes.but
 attributes/clientbutes.txt
 attributes/clientsnd.but
@@ -318,8 +316,6 @@ attributes/modelbutes.txt
 attributes/music.but
 attributes/music.txt
 attributes/pal_layout.but
-attributes/pal_layout.but
-attributes/pal_layout.txt
 attributes/pal_layout.txt
 attributes/proptypes.but
 attributes/proptypes.txt
@@ -644,8 +640,6 @@ chars/skins/workguard_action_head2.dtx
 chars/skins/workguard_action.dtx
 config/autoexec.ps2
 credits/credits.txt
-credits/credits.txt
-credits/intro.txt
 credits/intro.txt
 guns/models_hh/ak47_hh.ltb
 guns/models_hh/atomlaser_hh.ltb
@@ -2644,7 +2638,6 @@ stream/m13/vo_m13s01_b.lps
 stream/m13/vo_m13s02_a_non.lps
 stream/m13/vo_m13s02_a.lps
 stream/m13/vo_m13s02_b.lps
-stream/m13/vo_m13s02_b.lps
 stream/m13/vo_m13s03_a.lps
 stream/m13/vo_m13s03_b.lps
 stream/m13/vo_m13s04_a.lps
@@ -2689,7 +2682,6 @@ tex/detailtex/dtl0021.dtx
 tex/detailtex/dtl0022.dtx
 tex/detailtex/dtl0024.dtx
 tex/detailtex/dtl0025.dtx
-tex/detailtex/dtl0025.dtx 
 tex/detailtex/dtl0028.dtx
 tex/detailtex/dtl0029.dtx
 tex/doors/dr_hinge.dtx
@@ -3094,7 +3086,6 @@ tex/glass/gl03/gl0127.dtx
 tex/glass/gl03/gl0128.dtx
 tex/glass/gl03/gl0129_ma.dtx
 tex/glass/gl03/gl0129.dtx
-tex/glass/gl03/gl0130_cs.dtx
 tex/glass/gl03/gl0130_cs.dtx
 tex/glass/gl03/gl0130.dtx
 tex/glass/gl03/gl0131.dtx
@@ -3749,7 +3740,6 @@ tex/objects/obj02/obj0073.dtx
 tex/objects/obj02/obj0074.dtx
 tex/objects/obj02/obj0075.dtx
 tex/objects/obj02/obj0076_cs.dtx
-tex/objects/obj02/obj0076_cs.dtx
 tex/objects/obj02/obj0076.dtx
 tex/objects/obj02/obj0077.dtx
 tex/objects/obj02/obj0078.dtx
@@ -4178,7 +4168,6 @@ tex/objects/obj12/obj0595.dtx
 tex/objects/obj12/obj0596.dtx
 tex/objects/obj12/obj0597.dtx
 tex/objects/obj12/obj0598.dtx
-tex/objects/obj12/obj0600_cs.dtx
 tex/objects/obj12/obj0600_cs.dtx
 tex/objects/obj12/obj0600.dtx
 tex/objects/obj13/obj0601.dtx
@@ -5774,7 +5763,6 @@ tex/trans/transobj01/trobj0010.dtx
 tex/trans/transobj01/trobj0012.dtx
 tex/trans/transobj01/trobj0013.dtx
 tex/trans/transobj01/trobj0014.dtx
-tex/trans/transobj01/trobj0015_cs.dtx
 tex/trans/transobj01/trobj0015_cs.dtx
 tex/trans/transobj01/trobj0015.dtx
 tex/trans/transobj01/trobj0016.dtx
