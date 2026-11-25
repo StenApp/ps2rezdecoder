@@ -2531,6 +2531,7 @@ stream/lps/vo_t07s01.lps
 stream/lps/vo_t08s01.lps
 stream/lps/vo_t09s01.lps
 stream/lps/vo_t10s01.lps
+stream/m01/nolf_intro_movie.wav
 stream/m01/nolf_ps2_02.wav
 stream/m01/nolf_ps2_13.wav
 stream/m01/vo_m01s01_non.lps
