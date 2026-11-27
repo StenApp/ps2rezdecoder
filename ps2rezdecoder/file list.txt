@@ -6154,3 +6154,12 @@ worlds/t10s01.ltb
 worlds/thiefmission1.ltb
 worlds/thiefmission2.ltb
 worlds/thiefmission3.ltb
+tex/wood/wd02/wdr0070.dtx
+memcard/slot00.sav
+memcard/config.sav
+memcard/besles-50592
+memcard/baslus-20028
+attributes/textureflags.txt
+interface/slider_bars.pcx
+interface/slider_arrows.pcx
+spr/spr0001ma.spr
